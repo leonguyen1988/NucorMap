@@ -1,0 +1,209 @@
+﻿@model NucorMap.Models.MapSpec
+
+@{
+   Layout = null;
+}
+
+ 
+<!DOCTYPE html>
+<html>
+<head>
+    @*Title will be show on the browser tab*@
+    <title>Nucor Map</title>
+
+    <script src="~/Scripts/jquery-3.3.1.min.js"></script>
+    <script src="~/Scripts/jquery-3.3.1.js"></script>
+    <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
+</head>
+
+<body>
+    <header><h1>Nucor Map</h1></header>
+    <strong style="padding:10px">
+        <label for="Department ">Department From : </label>
+        <select id="DepartmentFrom"></select>
+        <label for="Department ">Department To : </label>
+        <select id="DepartmentTo"></select>
+    </strong>
+    
+    
+    <script type="text/javascript">
+        var data = @Html.Raw(ViewBag.Location);
+        $(document).ready(function () {
+          var listItems = '<option selected="selected" value="0">----Select Department----</option>';
+          for (var i = 0; i < data.length; i++) {
+              if (data[i].Speed === "999") {
+                  var location = data[i];
+                  listItems += "<option value='" + location.Department + "'>" + location.Department + "</option>";
+              }
+         };
+
+          $("#DepartmentFrom").html(listItems);
+          $("#DepartmentTo").html(listItems);
+        });
+
+    </script>
+  
+    <div id="dvMap" style=" height: 800px">
+
+    <script type="text/javascript">
+
+            var markers = @Html.Raw(ViewBag.Location);
+            window.onload = function () {
+                var road = [
+                    { lat: 35.909048, lng: -89.775609 },
+                    { lat: 35.906403, lng: -89.775628 },
+                    { lat: 35.905673, lng: -89.775606 },
+                    
+                    ];
+
+                var flighPath= new google.maps.Polyline({
+                    path: road,
+                    geodesic: true,
+                    strokeColor: "black",
+                    strokeOpacity: 2.0,
+                    strokeWeight: 10
+                });
+
+                var directionService = new google.maps.DirectionsService;
+                var directionDisplay = new google.maps.DirectionsRenderer;
+                var mapOptions = {
+                    center: new google.maps.LatLng(markers[0].Latitude, markers[0].Longitude),
+                    zoom: 17,
+                    mapTypeId: "satellite"
+                };
+
+                var map = new google.maps.Map(document.getElementById("dvMap"), mapOptions);
+                flighPath.setMap(map);
+                var onChangeHandler = function() {
+                    //calculateAndDisplayRoute(directionService,directionDisplay);
+                    console.log("hello");
+                };
+
+                document.getElementById('DepartmentFrom').addEventListener('change', onChangeHandler);
+                document.getElementById('DepartmentTo').addEventListener('change', onChangeHandler);
+                //var infoWindow = new google.maps.InfoWindow();
+                //for (var i = 0; i < markers.length; i++) {
+                //    var data = markers[i];
+                //    var myLatLng = new google.maps.LatLng(data.Latitude, data.Longitude);
+                //    var marker = new google.maps.Marker({
+                //        position: myLatLng,
+                //        map: map,
+                //        title: data.title
+                //    });
+
+                //    This javascript function will show the info of location when we click on it
+                //    (function (marker, data) {
+                //        google.maps.event.addListener(marker, "mouseover", function (e) {
+                //            infoWindow.setContent(data.Department);
+                //            infoWindow.open(map, marker);
+                //        });
+                //    }) (marker, data);
+            }
+            //function calculateAndDisplayRoute(directionService,directionDisplay) {
+            //var start = document.getElementById('DepartmentFrom').value;
+            //var end = document.getElementById('DepartmentTo').value;
+            //directionService.route({
+            //    origin:start,
+            //    destination:end,
+            //    travelMode:'DRIVING'
+            //},  function(response,status) {
+            //    if(status ==='OK') {
+            //        directionDisplay.setDirection(response);
+            //    } else {
+            //        window.alert('Wrong Direction!!!');
+            //    }       
+            //});
+            //}
+       
+    </script>
+        </div>
+    @*<script>
+            var map;
+            var data =@Html.Raw(ViewBag.Location);
+            function initMap() {
+                var AdministratorAndSaleLocation = { lat: 35.899411, lng: -89.776254 };
+                var GuardCheck = { lat: 35.907578, lng: -89.775639 };
+
+                // create a array of locations
+                //var location = [
+                //    ['AdandSale', 35.899411, -89.776254, 1],
+                //    ['GuardCheck', 35.907578, -89.775639, 2]
+                //];
+
+                // Create map with default is satellite
+                map = new google.maps.Map(document.getElementById('map'), {
+                    center: {
+                        lat: data[0].Latitude,
+                        lng: data[0].Longitude
+                            },
+                    zoom:10,
+                    mapTypeId: 'satellite'
+                });
+
+                    $.get("@Url.Action(GetAllLocation","Home"")", function (data, status) {
+                        var marker = [];
+                        var contentString = [];
+                        var infoWindow = [];
+                        for (var i = 0; i < data.length; i++) {
+
+                            marker[i] = new google.maps.Marker({
+                                position: { lat: data[i].Latitude, lng: data[i].Longitude},
+                                map: map
+                            });
+                            contentString[i] = '<div id="content">' +
+                                '<div id="siteNotice">' +
+                                '</div>' +
+                                '<h1 id="firstHeading" class="firstHeading">'+data[i].NameDepartment+'</h1>' +
+                                '<div id="bodyCotent">' +
+                                '<p><b>Administrator</b></p>';
+
+                            infoWindow[i] = new google.maps.InfoWindow({
+                                content: contentString[i]
+                            });
+
+                            var mdl = marker[i];
+                            google.maps.event.addListenner(marker[i], 'mouseover', (function (mdl, i) {
+                                return function () {
+                                    infoWindow[i].open(map, marker[i]);
+                                }
+                            })(marker[i], i));
+                        }
+
+
+                })
+                //var marker1 = new google.maps.Marker({
+                //    position: GuardCheck,
+                //    map: map
+                //});
+
+                //var marker2 = new google.maps.Marker({
+                //    position: AdAndSale,
+                //    map: map
+                //});
+                //infor about the location 1
+                //var contentString = '<div id="content">' +
+                //    '<div id="siteNotice">' +
+                //    '</div>' +
+                //    '<h1 id="firstHeading" class="firstHeading">Administrator & Sale</h1>';
+
+                //var inforwindow = new google.maps.inforWindow({
+                //    content: contentString
+                //});
+
+                ////creat location for maker1= Administration & Sale
+                //var mapMaker1 = new google.maps.Marker({
+                //    map: map,
+                //    position: GuardCheck,
+                //    title: 'GuardCheck'
+                //});
+
+                //mapMaker1.addListener('click', function() {
+                //    inforwindow.open(map, mapMaker1);
+                //});
+
+            }
+        </script>*@
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAg1lYO8SfH8xuZAYvd2TOi0vPhBXutvIM&callback=initMap"
+            async defer></script>
+</body>
+</html>
